@@ -250,7 +250,7 @@ class StayWestSearchAgent(SearchAgent):
         costFn = lambda pos: 2 ** pos[0]
         self.searchType = lambda state: PositionSearchProblem(state, costFn)
 
-def manhattanHeuristic(position, problem, info={}):
+def manhattanHeuristic(position, problem, info={}): # pos,prblem
     "The Manhattan distance heuristic for a PositionSearchProblem"
     xy1 = position
     xy2 = problem.goal
@@ -289,20 +289,30 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+        # First, we need to check if the starting state is one of the corners.
+        cornersVisited = (0,0,0,0)
+        for i in range(len(self.corners)):
+            if self.startingPosition == i:
+                self.cornersVisited[i]=1
+        self.startState = (self.startingPosition,cornersVisited)
+
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+
+        return not(0 in state[1])
 
     def getSuccessors(self, state):
         """

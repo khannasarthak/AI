@@ -92,12 +92,12 @@ def depthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
     # util.raiseNotDefined()   
 
-    #   Resources refered: 
+    # References: 
     #   https://docs.python.org/2.7/tutorial/classes.html   
-    #   https://stackoverflow.com/questions/21508765/how-to-implement-depth-first-search-for-graph-with-non-recursive-aprroach
-    #   https://github.com/weixsong/pacman/blob/master/search.py
+    #   https://stackoverflow.com/questions/21508765/how-to-implement-depth-first-search-for-graph-with-non-recursive-aprroach    
     #   https://www.reddit.com/r/artificial/comments/6rwbf1/ai_teaching_pacman_to_search_with_depth_first/
     #   AI a modern approach, pg 86,87 
+    #   https://stackoverflow.com/questions/12864004/tracing-and-returning-a-path-in-depth-first-search
 
     class node():   # Class to initialise nodes.
         def __init__(self,parent,state,action):
@@ -116,13 +116,16 @@ def depthFirstSearch(problem):
     while fringe.isEmpty()==False:  # while loop to check while the stack is not empty
         currentNode = fringe.pop()  # pop the node         
         currentState = currentNode.state 
+
+        if problem.isGoalState(currentState):   # Checking if goal state is reached. Then currentNode is the solution
+            break
+
         if currentState in explored:    # adding node.state to explored and marking it as visited
             continue
         else:
             explored.add(currentState)
 
-        if problem.isGoalState(currentState):   # Checking if goal state is reached. Then currentNode is the solution
-            break
+        
         for successor in problem.getSuccessors(currentState):   # Get successors of the current node
             # print ('+++', successor,'STATE-',successor[0],'Action-',successor[1]) # successor[0] gives the state of the child node
             if successor[0] not in explored:  # If succesors not already visited, we push the successsor onto the stack  
@@ -133,7 +136,7 @@ def depthFirstSearch(problem):
                 fringe.push(successorNode) # push the successor node onto the stack
 
   
-    while currentNode.parent!=None:     # tracing the path going back up to the parent.
+    while currentNode.parent:     # tracing the path going back up to the parent.
         actions.append(currentNode.action)  # adding the action of each node going up to the root.
         currentNode = currentNode.parent    # updating currentNode with its parent node
     
@@ -147,8 +150,11 @@ def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
     # util.raiseNotDefined()
-    # Basically, BFS is the same as DFS, all we have to do is change the LIFO stack to a FIFO Queue. Thus, using the same code and
+
+    # Basically, BFS is the same as DFS, all we have to do is change the LIFO Stack to a FIFO Queue. Thus, using the same code and
     # just change the util.Stack() to util.Queue() passed the test cases.
+    # Reference:
+    #   AI a modern approach, pg 81,82
     
 
     class node():   # Class to initialise nodes.
@@ -168,13 +174,16 @@ def breadthFirstSearch(problem):
     while fringe.isEmpty()==False:  # while loop to check while the queue is not empty
         currentNode = fringe.pop()  # pop the node         
         currentState = currentNode.state 
+
+        if problem.isGoalState(currentState):   # Checking if goal state is reached. Then currentNode is the solution
+            break
+
         if currentState in explored:    # adding node.state to explored and marking it as visited
             continue
         else:
             explored.add(currentState)
 
-        if problem.isGoalState(currentState):   # Checking if goal state is reached. Then currentNode is the solution
-            break
+        
         for successor in problem.getSuccessors(currentState):   # Get successors of the current node
             # print ('+++', successor,'STATE-',successor[0]) # successor[0] gives the state of the child node
             if successor[0] not in explored:  # If succesors not already visited, we push the successsor onto the queue  
@@ -184,17 +193,65 @@ def breadthFirstSearch(problem):
                 fringe.push(successorNode) # push the successor node onto the queue
 
   
-    while currentNode.parent!=None:     # tracing the path going back up to the parent.
+    while currentNode.parent:     # tracing the path going back up to the parent.
         actions.append(currentNode.action)  # adding the action of each node going up to the root.
         currentNode = currentNode.parent    # updating currentNode with its parent node
     
-    return actions[::-1]    # Reversing the output.
+    return actions[::-1]    # Reversing the output as we are appending at the end of the actions list
     
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     # util.raiseNotDefined()
+
+    # References:
+    #   https://www.youtube.com/watch?v=dRMvK76xQJI
+    #   AI a modern approach, pg 84
+    #   https://cyluun.github.io/blog/uninformed-search-algorithms-in-python
+
+
+    
+
+    class node():   # Class to initialise nodes.
+        def __init__(self,parent,state,action,cost):
+            self.parent = parent
+            self.state = state
+            self.action = action
+            self.cost = cost
+
+          
+    root = node(None, problem.getStartState(),None,0)
+    fringe = util.PriorityQueue() 
+    fringe.push(root,root.cost) 
+    explored = set()
+    actions = []
+
+    while fringe.isEmpty()==False:
+        currentNode = fringe.pop()
+        currentState = currentNode.state
+        currentCost = currentNode.cost
+
+        if problem.isGoalState(currentState):
+            break
+
+        if currentState in explored:
+            continue
+        else:
+            explored.add(currentState)
+
+        for successor in problem.getSuccessors(currentState):
+            if successor[0] not in explored:
+                successorNode = node(currentNode,successor[0],successor[1],currentCost+successor[2])    # Cost has to be calculated for 
+                # each successor, and thus it has the cost of the parent added to it. 
+                fringe.push(successorNode,successorNode.cost)
+
+    #print ('PATH COST---',currentNode.cost)
+    while currentNode.parent:
+        actions.append(currentNode.action)
+        currentNode=currentNode.parent
+
+    return actions[::-1]
 
 
 def nullHeuristic(state, problem=None):
@@ -207,7 +264,63 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+
+    # References:
+    #   http://www.redblobgames.com/pathfinding/a-star/introduction.html
+    #   http://www.growingwiththeweb.com/2012/06/a-pathfinding-algorithm.html
+    #   http://www.redblobgames.com/pathfinding/a-star/implementation.html
+    #   
+
+    class node():   # Class to initialise nodes.
+        def __init__(self,parent,state,action,gcost,hcost):
+            self.parent = parent
+            self.state = state
+            self.action = action
+            self.gcost = gcost # g(n)
+            self.hcost = hcost # h(n)          
+            self.fcost = gcost+hcost  #f(n) = g(n) + h(n)  
+            
+
+    # Initializing root with g(n) = 0, h(n) = heauristic(startState)
+    root = node(None,problem.getStartState(),None,0,heuristic(problem.getStartState(),problem)) 
+
+    fringe = util.PriorityQueue()
+    fringe.push(root,root.fcost)
+
+    # print ('ROOT COST', root.fcost)
+    explored = set()
+    actions = []
+
+
+    while fringe.isEmpty()==False:
+        currentNode = fringe.pop()
+        currentState = currentNode.state
+        currentGCost = currentNode.gcost # current g(n), to calculate total cost for each successor node, like UCS
+        currentFCost = currentNode.fcost # f(n) for each node, also calculated for each successor
+
+        if problem.isGoalState(currentState):
+            break
+
+        if currentState in explored:
+            continue
+        else:
+            explored.add(currentState)
+
+        for successor in problem.getSuccessors(currentState):
+            if successor[0] not in explored:
+            # If successor not visited, we initialize the succesor Node with (Parent, State, Action, updated g(n) like UCS, h(n) using the heuristic)
+
+                successorNode = node(currentNode,successor[0],successor[1],currentGCost+successor[2],heuristic(successor[0],problem))  
+                # It is then pushed onto the priority Queue           
+                fringe.push(successorNode,successorNode.fcost)
+
+
+    while currentNode.parent:
+        actions.append(currentNode.action)
+        currentNode=currentNode.parent
+
+    return actions[::-1]
 
 
 # Abbreviations
@@ -215,3 +328,5 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+
+
