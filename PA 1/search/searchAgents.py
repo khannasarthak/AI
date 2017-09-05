@@ -280,7 +280,7 @@ class CornersProblem(search.SearchProblem):
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
-        self.corners = ((1,1), (1,top), (right, 1), (right, top))
+        self.corners = ((1,1), (1,top), (right, 1), (right, top))   # TUPLE
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 print 'Warning: no food in corner ' + str(corner)
@@ -289,12 +289,20 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+
+        # References:
+        #   https://github.com/Bhavya6187/AI-projects/blob/master/prolog/searchAgents.py
+
+
         # First, we need to check if the starting state is one of the corners.
-        cornersVisited = (0,0,0,0)
-        for i in range(len(self.corners)):
-            if self.startingPosition == i:
-                self.cornersVisited[i]=1
-        self.startState = (self.startingPosition,cornersVisited)
+        # print ('SELF TYPE--',type(self.corners))
+
+        cornersVisited = (0,0,0,0)  # keeping track if the 4 corners have been visited or not
+        for i in range(4):  # since 4 corners
+            if self.startingPosition == self.corners[i]:    # If start state is corner, we update cornersVisited
+                cornersVisited[i]=1
+        # print ('CORNERS',cornersVisited)
+        self.startState = (self.startingPosition,cornersVisited)    # pass the start state with start position and the corners visited
 
     def getStartState(self):
         """
@@ -312,7 +320,12 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
 
-        return not(0 in state[1])
+        # Final goal is the visit all corners, so, we check is corvers visited is (1,1,1,1) or not. 
+
+        
+        if state[1].count(1)==4:
+            return True
+        return False
 
     def getSuccessors(self, state):
         """
@@ -336,6 +349,28 @@ class CornersProblem(search.SearchProblem):
 
             "*** YOUR CODE HERE ***"
 
+            x,y = state[0]  # currentPosition is the starting position
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty] # Boolean
+
+            # print ('TYPE--',type(state[1]))
+
+
+            if hitsWall==False: # does not hit wall
+                nextState = (nextx,nexty)   # if its not a wall, the nextState is valid.
+
+                # state[1] is a tuple, and thus immutable thats is why we convert it to list to make changes
+                cornersVisited = list(state[1])   
+                
+                if nextState in self.corners:   # if nextState is a corner we update corners visited with this info
+                    # print ('asdfa',list(self.corners).index(nextState))
+                    cornersVisited[self.corners.index(nextState)]=1
+
+                # cost is 1 as BFS, and we convert the list to tuple to make it meet data type constraints of getSuccessor() 
+                successors.append(((nextState,tuple(cornersVisited)),action,1))    
+                                                                                
+           
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -370,7 +405,44 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    # References:
+    #   https://www.quora.com/How-can-I-design-a-heuristic-function-for-the-Pacman-corner-problem
+    #   https://www.reddit.com/r/aiclass/comments/ld0y7/good_a_heuristics_for_the_first_pacman_project/
+    #   https://stackoverflow.com/questions/9994913/pacman-what-kinds-of-heuristics-are-mainly-used
+
+    visitedCorners = list(state[1]) # the current status of the corners, if they have been visited or not
+    unvisitedCorners = []
+    for i in range(4):
+        if visitedCorners[i]==0:
+            unvisitedCorners.append(corners[i]) # creates a list of currently un visited corners
+    # print (corners)
+    # print ('---', visitedCorners, unvisitedCorners,state[0])
+   
+
+    if problem.isGoalState(state)==True:    # to Prevent non zero return at goal state
+        return 0
+    else:
+        # we create a list of manhattan distances from current state to each unvisited corner
+        # and return the maximum of them
+        hcost = []  
+
+        for i in unvisitedCorners:
+            hcost.append(util.manhattanDistance(state[0], i))
+
+        return max(hcost)   # max to avoid making the heuristic inconsistant and to expand less nodes. min(hcost) was failing in 
+                            # 1 test case out of the 3. 
+
+
+    
+    # print state[0]
+    
+    
+
+    
+   
+ 
+     # Default to trivial solution
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -495,7 +567,21 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+
+        # print 'Start',startPosition
+        # print food
+        # print '-------------'
+        # print food[0][0], food[0][1]
+        # print 'Wall',walls
+        # print 'GOAL--', problem.isGoalState(startPosition)
+        return search.astar(problem)  
+
+        # DFS path cost = 5324
+        # BFS path cost = 350
+        # UCS path cost = 350
+        # ASTAR path cost = 350
+        # using either of these 3 search functions, the autograder gives 3/3
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -531,7 +617,14 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # util.raiseNotDefined()
+        # The goal is the check if food is there or not in a state
+
+        
+        if self.food[x][y]==True:   # food is a NxN matrix with food pellets marked as True and empty spaces as False
+            return True             # So just need to check if the particular co ordinate has food or not.
+        return False
 
 def mazeDistance(point1, point2, gameState):
     """
