@@ -536,7 +536,26 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    # Trying similar heuristic as corners gives 3/4 on the autograder. Where the heuristic is the max of manhat distance between
+    # current position and position of each food pellet in the grid.
+    # Using the mazeDistance, which seems like a much tighter heuristic as compared to manhattan distance since it gives the 
+    # maze distance between two points incorporating walls. But it runs quite slow, as it calls bfs for each such distance. 
+    # Gives 5/4 on the auto grader though.
+
+    
+    # print foodGrid.asList()
+    # print position
+
+    problem.heuristicInfo['wallCount'] = problem.walls.count()
+    hcost= []
+    if problem.isGoalState(state)==True:    # To prevent non - zero at goal state.
+        return 0
+    else:
+        for i in foodGrid.asList():
+            # d.append(util.manhattanDistance(position,i))
+            hcost.append(mazeDistance(position,i, problem.startingGameState))
+        return max(hcost)
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -621,7 +640,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         # util.raiseNotDefined()
         # The goal is the check if food is there or not in a state
 
-        
+
         if self.food[x][y]==True:   # food is a NxN matrix with food pellets marked as True and empty spaces as False
             return True             # So just need to check if the particular co ordinate has food or not.
         return False
