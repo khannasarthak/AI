@@ -204,6 +204,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+
         # DO THIS AGAIN
 
         # def absearch(gameState,depth): # returns a move
@@ -223,62 +224,68 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
 
 
-        #     # return validMoves[values.index(v)]  # move which has max value v
+            # return validMoves[values.index(v)]  # move which has max value v
 
-        # def maxValue(gameState,a,b,depth): # return utility value,[self.eval], and the move corresponding to the 
-        # # value
-        # # check for terminal case
-        #     if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
-        #         return self.evaluationFunction(gameState)
-
-        #     v = float('-inf') # v = -infi
-        #     # values = []
-        #     # depth += 1
-        #     validMoves = gameState.getLegalActions(0) # pacman
-        #     for move in validMoves:
-        #         value = minValue(gameState.generateSuccessor(0,move),a,b,depth,gameState.getNumAgents() - 1)
-        #         v = max(v,value)
-
-        #         if v>=b:
-        #             return v
-        #         a = max(a,v)
-            
-        #     print ('MAX',v)
-        #     return v
-
-
-        # def minValue(gameState,a,b,depth,agent): # return utility value,[self.eval]
-        # # check for terminal case
-        #     if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
-        #         return self.evaluationFunction(gameState)
-
-        #     v = float('inf') # v = +infi
-
-        #     numOfGhosts = gameState.getNumAgents()-1
-
-        #     validMoves = gameState.getLegalActions(agent)
-        #     for move in validMoves:
-        #         if agent == numOfGhosts:
-        #             value = maxValue(gameState.generateSuccessor(agent,move),a,b,depth-1)
-
-        #         else:
-        #             value = minValue(gameState.generateSuccessor(agent,move),a,b,depth,agent+1)
-        #         v = min(v,value)
-        #         if v<=a:
-        #             return v
-        #         b = min(a,v)
-        #     print ('MIN',v)
-        #     return v
-
-        # absearch(gameState,self.depth)
-
-
-
-
-
-
-
+        def maxValue(gameState,a,b,depth): # return utility value,[self.eval], and the move corresponding to the 
         
+            if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
+                return self.evaluationFunction(gameState)
+
+            v = float('-inf') # v = -infi
+            
+            # depth += 1
+            validMoves = gameState.getLegalActions(0) # pacman
+            for move in validMoves:
+                # value = minValue(gameState.generateSuccessor(0,move),a,b,depth,1)
+                # v = max(v,value)
+                v = max(v, minValue(gameState.generateSuccessor(0,move), a, b, depth, 1))
+
+                if v>b:
+                    return v
+                a = max(a,v)
+            
+            # print ('MAX',v)
+            return v
+        
+        
+        def minValue(gameState, a, b, depth, agent):
+            
+            if gameState.isWin() or gameState.isLose() or depth == 0:
+                return self.evaluationFunction(gameState)
+
+            v = float("inf")
+            numOfGhosts = gameState.getNumAgents() - 1
+
+            validMoves = gameState.getLegalActions(agent)
+            
+            for move in validMoves:
+                # nextState = gameState.generateSuccessor(agentindex, action)
+                if agent == numOfGhosts:
+                    # values = 
+                    v = min(v, maxValue(gameState.generateSuccessor(agent, move), a, b, depth - 1))
+                    
+                else:
+
+                    v = min(v, minValue(gameState.generateSuccessor(agent, move), a, b, depth,agent + 1))
+
+                if v < a:
+                    return v
+                b = min(b, v)
+            return v
+        
+
+        # Reference : 
+        #   https://stackoverflow.com/questions/10188619/alpha-beta-pruning-does-it-need-a-extra-tree-data-structure
+        bestMove = ''
+        a = float("-inf")
+        b = float("inf")
+        validMoves = gameState.getLegalActions(0)
+        for move in validMoves:
+            v = minValue(gameState.generateSuccessor(0, move), a, b, self.depth,1)
+            if v>a:
+                a = v
+                bestMove = move
+        return bestMove       
 
 
 
