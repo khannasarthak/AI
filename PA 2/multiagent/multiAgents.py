@@ -140,10 +140,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Agent = 1 : Ghost
         # Agent = 2 : Ghost     
 
-        def miniMax(gameState,depth):
-            return (maxPlay(gameState,self.depth)[1])   # returns the optimal move
         
-        def maxPlay(gameState,depth):
+        
+        def maxValue(gameState,depth):
             # check if it is a terminal state, if yes then return utility
             if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
                 return self.evaluationFunction(gameState)
@@ -153,17 +152,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
             values = []
             for move in validMoves:
                 # Next move is of the ghost after pacman
-                values.append(minPlay(gameState.generateSuccessor(0, move),1,depth))
+                values.append(minValue(gameState.generateSuccessor(0, move),1,depth))
             # Taking maximum of those values    
-            maxValues = max(values)
-            
-            # Findin the best move, i.e, the one with the maximum valued utility, this was easier
-            # to implement as compared to the minimax decision funtion in the book.
-            bestMove = validMoves[values.index(maxValues)]          
-            return maxValues,bestMove
+            v = max(values)              
+            return v
 
 
-        def minPlay(gameState,agent,depth):
+        def minValue(gameState,agent,depth):
             if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
                 return self.evaluationFunction(gameState)
 
@@ -175,16 +170,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
             for move in validMoves:
                 if(agent==numOfGhosts): # that means last ghost, so next move will be of pacman
 
-                    values.append(maxPlay(gameState.generateSuccessor(agent,move),depth-1))                    
-                else:   # Penultimate ghost, next move of last ghost
-                    values.append(minPlay(gameState.generateSuccessor(agent,move),agent+1,depth))   # agent+1 =2
+                    values.append(maxValue(gameState.generateSuccessor(agent,move),depth-1))                    
+                else:   
+                # Penultimate ghost, next move of last ghost
+                    values.append(minValue(gameState.generateSuccessor(agent,move),agent+1,depth))   # agent+1 =2
                     
                 
-            minValues = min(values)
+            v = min(values)
             
-            return minValues
+            return v
 
-        return miniMax(gameState,self.depth)
+
+        # Reference : 
+        #   https://stackoverflow.com/questions/10188619/alpha-beta-pruning-does-it-need-a-extra-tree-data-structure
+
+        # finding the best action for the corresponding v value
+        bestMove = ''
+        tmp = -999999
+        validMoves = gameState.getLegalActions(0)
+        for move in validMoves:
+            v = minValue(gameState.generateSuccessor(0, move), 1, self.depth)
+            if v>tmp:
+                tmp = v
+                bestMove = move
+        return bestMove       
+
 
 
 
@@ -205,26 +215,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        # DO THIS AGAIN
+        # References:
+        #   AI, A modern Approach pg 170
+        #   https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode
+        #   
 
-        # def absearch(gameState,depth): # returns a move
-            
-            
-        #     validMoves = gameState.getLegalActions(0) # pacman
-        #     values = []
-        #     for move in validMoves:
-        #         # values = [(value),(move)]
-        #         values.append((minValue(gameState.generateSuccessor(0, move), float('-inf'), float('inf'), 1,gameState.getNumAgents() - 1), move))
-           
-        #     # return max(values, key=values.get)
-
-        #     bestMove = max(values)
-        #     print (bestMove)
-        #     return bestMove[1]
-
-
-
-            # return validMoves[values.index(v)]  # move which has max value v
+                   
+        
 
         def maxValue(gameState,a,b,depth): # return utility value,[self.eval], and the move corresponding to the 
         
@@ -240,7 +237,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 # v = max(v,value)
                 v = max(v, minValue(gameState.generateSuccessor(0,move), a, b, depth, 1))
 
-                if v>b:
+                if v>b:     # Pruning
                     return v
                 a = max(a,v)
             
@@ -259,16 +256,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             validMoves = gameState.getLegalActions(agent)
             
             for move in validMoves:
-                # nextState = gameState.generateSuccessor(agentindex, action)
-                if agent == numOfGhosts:
+                
+                if agent == numOfGhosts:    # that means last ghost, so next move will be of pacman
                     # values = 
                     v = min(v, maxValue(gameState.generateSuccessor(agent, move), a, b, depth - 1))
                     
                 else:
-
+                        # that means second last ghost, so next move will be of ghost 2
                     v = min(v, minValue(gameState.generateSuccessor(agent, move), a, b, depth,agent + 1))
 
-                if v < a:
+                if v < a:   # Pruning
                     return v
                 b = min(b, v)
             return v
@@ -276,6 +273,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         # Reference : 
         #   https://stackoverflow.com/questions/10188619/alpha-beta-pruning-does-it-need-a-extra-tree-data-structure
+
+        # finding the best action for the corresponding v value
         bestMove = ''
         a = float("-inf")
         b = float("inf")
@@ -287,14 +286,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 bestMove = move
         return bestMove       
 
-
-
-
-
-
-
-
-        # def minValue(gameState,a,b):
 
         
 
@@ -311,7 +302,68 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def maxValue(gameState,depth):  # max value is same as minimax
+            # check if it is a terminal state, if yes then return utility
+            if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
+                return self.evaluationFunction(gameState)
+            # Get valid moves
+            validMoves = gameState.getLegalActions(0) #
+            # calculatin v for each successor state for valid moves
+            values = []
+            for move in validMoves:
+                # Next move is of the ghost after pacman
+                values.append(expValue(gameState.generateSuccessor(0, move),1,depth))
+            # Taking maximum of those values    
+            v = max(values)              
+            return v
+
+
+        def expValue(gameState,agent,depth):
+            if depth == 0 or gameState.isWin()==True or gameState.isLose() == True:
+                return self.evaluationFunction(gameState)
+
+            validMoves = gameState.getLegalActions(agent) 
+            values = []
+            v = 0
+
+            numOfGhosts = gameState.getNumAgents()-1
+
+            for move in validMoves:        
+
+                prob = float(1)/len(validMoves) # Probability = 1/(number of possible actions)
+
+                if(agent==numOfGhosts): # that means last ghost, so next move will be of pacman
+                    
+                    # v + = p* value(successor)
+                    v += prob*maxValue(gameState.generateSuccessor(agent,move),depth-1)                
+                else:   
+                # Penultimate ghost, next move of last ghost
+                    
+                    # v + = p* value(successor)
+                    v += prob*expValue(gameState.generateSuccessor(agent,move),agent+1,depth)
+                
+            
+           
+            
+            return v
+
+        
+
+        # Reference : 
+        #   https://stackoverflow.com/questions/10188619/alpha-beta-pruning-does-it-need-a-extra-tree-data-structure
+
+        # finding the best action for the corresponding v value
+        bestMove = ''
+        tmp = -999999
+        validMoves = gameState.getLegalActions(0)
+        for move in validMoves:        
+            v = expValue(gameState.generateSuccessor(0, move), 1, self.depth)
+            if v>tmp:
+                tmp = v
+                bestMove = move
+        return bestMove    
+        
 
 def betterEvaluationFunction(currentGameState):
     """
