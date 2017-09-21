@@ -95,6 +95,9 @@ class ReflexAgent(Agent):
             score = score + (10.0/minFooddistance)  # food weight is taken as 10.0
 
         for ghost in newGhostStates:
+            w = 1
+            if ghost.scaredTimer>0:    # checking for scared ghost
+                w= 100  # weight for scared ghost
             ghostdistances.append(manhattanDistance(newPos, ghost.getPosition()))
         minghostdistance = min(ghostdistances)
         
@@ -425,7 +428,7 @@ def betterEvaluationFunction(currentGameState):
         w  =1
         for pellet in powerPelletPos:
             if pellet==food:
-                print ('TES')  
+                print ('TES') # never gets printed 
                 w = 50        # weight of 50 for power pellet
         fooddistances.append(w*manhattanDistance(newPos, food))
 
