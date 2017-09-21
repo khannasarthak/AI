@@ -50,6 +50,8 @@ class ReflexAgent(Agent):
         "Add more of your code here if you want to"
         # Function to run classic search: python pacman.py --frameTime 0 -p ReflexAgent -l testClassic
 
+
+
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -75,8 +77,33 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        print newFood
-        return successorGameState.getScore()
+        # Three main things to consider
+        # 1. Nearest Food pellet, total foods
+        # 2. Nearest Ghost
+        
+
+
+        score =  successorGameState.getScore()
+        fooddistances = []
+        ghostdistances = []
+
+        for food in newFood.asList():
+            fooddistances.append(manhattanDistance(newPos, food))
+
+        if len(fooddistances)>0:
+            minFooddistance = min(fooddistances)
+            score = score + (10.0/minFooddistance)  # food weight is taken as 10.0
+
+        for ghost in newGhostStates:
+            ghostdistances.append(manhattanDistance(newPos, ghost.getPosition()))
+        minghostdistance = min(ghostdistances)
+        
+        if len(ghostdistances) >0 and minghostdistance !=0:
+            score = score - (10.0/minghostdistance)  # ghost weight is taken as 10.0
+
+        return score
+
+
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -230,7 +257,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             v = float('-inf') # v = -infi
             
-            # depth += 1
+            
             validMoves = gameState.getLegalActions(0) # pacman
             for move in validMoves:
                 # value = minValue(gameState.generateSuccessor(0,move),a,b,depth,1)
@@ -241,7 +268,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     return v
                 a = max(a,v)
             
-            # print ('MAX',v)
+            
             return v
         
         
@@ -302,6 +329,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
+
+        # Reference:
+        #   Expectimax pseudocode from slide 7
 
         def maxValue(gameState,depth):  # max value is same as minimax
             # check if it is a terminal state, if yes then return utility
@@ -370,10 +400,54 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: 
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # successorGameState = currentGameState.generatePacmanSuccessor(action)
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    powerPelletPos = currentGameState.getCapsules()
+
+
+    # print powerPelletPos[0]
+    score =  currentGameState.getScore()
+    
+    fooddistances = []
+    ghostdistances = []
+    powerPelletDistance = []
+
+
+
+    for food in newFood.asList(): 
+        w  =1
+        for pellet in powerPelletPos:
+            if pellet==food:
+                print ('TES')  
+                w = 50        # weight of 50 for power pellet
+        fooddistances.append(w*manhattanDistance(newPos, food))
+
+
+
+    if len(fooddistances)>0:
+        minFooddistance = min(fooddistances)
+        score = score + (10.0/minFooddistance)  # food weight is taken as 10.0
+
+    for ghost in newGhostStates:
+        w = 1
+        if ghost.scaredTimer>0: 
+            w= 100  # weight 100 for scared ghost, will try to eat it to get max points
+
+        ghostdistances.append(w*manhattanDistance(newPos, ghost.getPosition()))
+    minghostdistance = min(ghostdistances)
+    
+    if len(ghostdistances) >0 and minghostdistance !=0:
+        score = score - (10.0/minghostdistance)  # ghost weight is taken as 10.0
+
+    return score
+   
 
 # Abbreviation
 better = betterEvaluationFunction
