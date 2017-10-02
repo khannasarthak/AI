@@ -46,47 +46,30 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
         # print mdp.getStates()
-        # for state in mdp.getStates():
-        #     action = mdp.getPossibleActions(state)
-        #     self.computeQValueFromValues(state,action)
+      
 
-         # keeping track of values in this
+         
         for i in range(iterations):
-            op = util.Counter()
+            op = util.Counter() # keeping track of values in this , temporary
+
             possibleStates = mdp.getStates()
             
             for state in possibleStates:
-                maxQ = None
+                maxQ = None # set initial Q value to find max
+
                 possibleActions = mdp.getPossibleActions(state)
+
                 for action in possibleActions:
+                    # Calculate Q value for the state action pair
                     QValue = self.computeQValueFromValues(state, action)
+                    # Find max Q value
                     if QValue>maxQ:
                         maxQ = QValue
-                    op[state] = maxQ
-
+                    # update with state and max Q value
+                    op[state] = maxQ           
                 
-                
-                # maxQ = max(qvalues)
-                # op[state]=max(q)
-            self.values = op
-
-
-
-
-            
-
-
-        # for i in range(self.iterations):
-        #   states = self.mdp.getStates()
-        #   temp_counter = util.Counter()
-        #   for state in states:
-        #     max_val = float("-inf")
-        #     for action in self.mdp.getPossibleActions(state):
-        #       q_value = self.computeQValueFromValues(state, action)
-        #       if q_value > max_val:
-        #         max_val = q_value
-        #       temp_counter[state] = max_val
-        #   self.values = temp_counter
+            # Replace values with the temporary storage.    
+            self.values = op            
 
 
 
