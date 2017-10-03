@@ -60,10 +60,13 @@ def question3e():
     # If not possible, return 'NOT POSSIBLE'
 
 def question6():
-    answerEpsilon = None
-    answerLearningRate = None
-    return answerEpsilon, answerLearningRate
+    # answerEpsilon = 0.1
+    # answerLearningRate = 0.5
+    # return answerEpsilon, answerLearningRate
     # If not possible, return 'NOT POSSIBLE'
+
+    # Not exactly sure why.
+    return 'NOT POSSIBLE'
 
 if __name__ == '__main__':
     print 'Answers to analysis questions:'
@@ -71,3 +74,5 @@ if __name__ == '__main__':
     for q in [q for q in dir(analysis) if q.startswith('question')]:
         response = getattr(analysis, q)()
         print '  Question %s:\t%s' % (q, str(response))
+
+# python gridworld.py -a q -k 50 -n 0 -g BridgeGrid -e 100 -l 0.8
