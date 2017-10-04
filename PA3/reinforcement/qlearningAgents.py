@@ -54,7 +54,7 @@ class QLearningAgent(ReinforcementAgent):
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
 
-       
+        # No need to check if state not seen as default value is 0 in QValues
         return self.QValues[(state,action)]
 
 
@@ -261,6 +261,8 @@ class ApproximateQAgent(PacmanQAgent):
         for feature in features:           
 
             self.getWeights()[feature]= self.getWeights()[feature]+ self.alpha*difference*features[feature]
+
+            # print self.getWeights()[feature]
 
 
         
