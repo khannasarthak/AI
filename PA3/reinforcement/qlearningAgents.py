@@ -79,7 +79,7 @@ class QLearningAgent(ReinforcementAgent):
         if QValues == []: # Terminal state with no legal actions
             return 0.0
 
-        return max(QValues) # returns max action
+        return max(QValues) # returns max Q value
 
         
 
@@ -136,10 +136,13 @@ class QLearningAgent(ReinforcementAgent):
         if len(legalActions)==0:    
             return None
 
-        # using simple greedy elipson policy, if true, Explore randomly with low prob (p) else act on existing Q values with high prob (1-p)
+        # using simple greedy elipson policy, if true, Explore randomly with low prob (p) 
+        # else act on existing Q values with high prob (1-p)
         if util.flipCoin(self.epsilon)==True:
+            # Explore
             action = random.choice(legalActions)
         else:
+            # Exploit
             action = self.computeActionFromQValues(state)       
 
         return action
@@ -255,14 +258,14 @@ class ApproximateQAgent(PacmanQAgent):
 
         # use getQvalue
 
-        # When difference was calculated in the loop, 3/5 test cases were being passed.
+        # Calculating difference
         difference = (reward + self.discount*self.computeValueFromQValues(nextState))-self.getQValue(state,action)
 
         for feature in features:           
 
             self.getWeights()[feature]= self.getWeights()[feature]+ self.alpha*difference*features[feature]
 
-            # print self.getWeights()[feature]
+            # print ('Weights-----',self.getWeights()[feature])
 
 
         

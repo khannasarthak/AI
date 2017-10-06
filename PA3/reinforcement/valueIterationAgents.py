@@ -50,7 +50,7 @@ class ValueIterationAgent(ValueEstimationAgent):
 
          
         for i in range(iterations):
-            op = util.Counter() # keeping track of values in this , temporary
+            op = util.Counter() # keeping track of values in this , temporary, initialised with all 0
 
             possibleStates = mdp.getStates()
             
@@ -109,7 +109,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Best action is the one with the highest Q value
 
         baseQValue = None    
-        bestAction = None
+        bestAction = None   # Also takes care of terminal States
         # pair = dict()
         possibleActions = self.mdp.getPossibleActions(state)
         for action in possibleActions:
