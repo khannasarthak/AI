@@ -339,29 +339,35 @@ class ParticleFilter(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
         "*** YOUR CODE HERE ***"
+     
         # Ghost captured
-        if noisyDistance==None:
-            # Updating all particles
-            self.particles = [self.getJailPosition() for i in range(self.numParticles)]
+        if noisyDistance is None: 
+            # Updating all particles           
+            self.particles = [self.getJailPosition()]*(self.numParticles)
+
         else:
-            beliefs = self.getBeliefDistribution()
             # initializing allPossible beliefs to 0
             allPossible = util.Counter()
 
-            for p in self.legalPositions:
-                trueDistance = util.manhattanDistance(p, pacmanPosition)                
-                # We update beliefs with likelihood multiplied by the priors
-                allPossible[p]=emissionModel[trueDistance]*beliefs[p]
+            for particle in self.particles:
+                trueDistance = util.manhattanDistance(particle, pacmanPosition)
+                # Updating the beliefs
+                allPossible[particle] += emissionModel[trueDistance]
 
-                # Check if all weights 0
-                if allPossible.totalCount()==0:
-                    # recreate from prior distribution
-                    self.initializeUniformly(gameState)
-                # otherwise we recreate the distribution based on allPossible beliefs
-                else:
-                    self.particles = [util.sample(allPossible) for i in range(self.numParticles)]
+            # Check if all weights 0
+            if allPossible.totalCount() == 0:
+                 # recreate from prior distribution
+                self.initializeUniformly(gameState)
+            # otherwise we recreate the distribution based on allPossible beliefs
+            else:
+                
+                self.particles = [util.sample(allPossible) for i in range(self.numParticles)]
 
 
+
+  
+
+# python autograder.py -t test_cases/q5/5-ParticleElapse
 
 
 
@@ -383,7 +389,7 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
 
-        # Time out for last case, see how to use nSample
+        
         newParticles = []
         for oldPos in self.particles:
             # distribution over new positions for the ghost
@@ -392,6 +398,7 @@ class ParticleFilter(InferenceModule):
             newParticles.append(util.sample(newPosDist))
 
         self.particles = newParticles
+
 
         
 
